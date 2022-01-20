@@ -126,6 +126,10 @@ public class GameFactory {
                     }
                 }
                 Weapon[] allowedWeapons = combatClass.getWeapons();
+                if(allowedWeapons.length == 0){
+                    System.out.println("Erro: Classe de combate não possui armas!");
+                    return null;
+                }
                 for(int i = 0; i < allowedWeapons.length; i++) {
                     System.out.printf("%d - %s%n", (i+1), allowedWeapons[i]);
                 }           
