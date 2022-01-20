@@ -10,16 +10,18 @@ public abstract class CombatCharacter {
     private int baseAtk;
     private int baseDef;
     private CombatClass combatClass;
+    private String name;
     private Weapon weapon;
     private Gender gender;
 
-    public CombatCharacter(int maxHp, int baseAtk, int baseDef, CombatClass combatClass, int chosenWeapon, Gender gender) throws IndexOutOfBoundsException{
+    public CombatCharacter(int maxHp, int baseAtk, int baseDef, CombatClass combatClass, int chosenWeapon, String name, Gender gender) throws IndexOutOfBoundsException{
         this.maxHp = maxHp;
         this.currentHp = maxHp;
         this.baseAtk = baseAtk;
         this.baseDef = baseDef;
         this.combatClass = combatClass;
         this.weapon = combatClass.getWeapons()[chosenWeapon];
+        this.name = name;
         this.gender = gender;
     }
 
@@ -31,12 +33,24 @@ public abstract class CombatCharacter {
         return this.currentHp;
     }
 
-    public void takeDamage(int damage){ 
-        this.currentHp -= damage;
+    public void modifyCurrentHp(int value){
+        this.currentHp += value;
+        if(this.currentHp > this.getMaxHp()){
+            this.currentHp = this.getMaxHp();
+        } else if (this.currentHp < 0) {
+            this.currentHp = 0;
+        }        
     }
 
-    public void refillHp(){
-        this.currentHp = this.getMaxHp();
+    public void takeDamage(int damage){ 
+        this.currentHp -= damage;
+        if(this.currentHp < 0) {
+            this.currentHp = 0;
+        }
+    }
+
+    public void drinkPotion(Potion potion){
+        potion.applyEffect(this);
     }
 
     public int getBaseAtk(){
@@ -65,6 +79,10 @@ public abstract class CombatCharacter {
     
     public Weapon getWeapon(){
         return this.weapon;
+    }
+
+    public String getName(){
+        return this.name;
     }
 
     public Gender getGender(){

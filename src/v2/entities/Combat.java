@@ -2,78 +2,134 @@ package v2.entities;
 
 import java.util.Scanner;
 
+import v2.entities.PlayableCharacter.Motivation;
+import v2.exceptions.InvalidGenderException;
+import v2.exceptions.InvalidMotivationException;
+
 public class Combat {
     public enum CombatWinner{
-        PLAYER, ENEMY, NONE;
+        PLAYER, ENEMY
     }
     private final static int DAMAGE_MODIFIER = 50;
-    private PlayableCharacter player;
+    private RolePlayingGame game;
     private Enemy enemy;
 
-    public Combat(PlayableCharacter player, Enemy enemy){
-        this.player = player;
+    public Combat(RolePlayingGame game, Enemy enemy){
+        this.game = game;
         this.enemy = enemy;
     }
 
-    public PlayableCharacter getplayer(){
-        return this.player;
+    public RolePlayingGame getGame(){
+        return this.game;
     }
 
     public Enemy getEnemy(){
         return this.enemy;
     }
 
-    public CombatWinner fight(){
-        //Combatplayer[] players = {player, enemy};
-        Dice20 d20 = new Dice20();
-        boolean isPlayerTurn = true;
+    public CombatWinner fight(boolean isPlayerTurn) throws InvalidGenderException, InvalidMotivationException{
+        PlayableCharacter player = this.getGame().getCharacter();
+        Enemy enemy = this.getEnemy();
+        Dice d20 = new Dice20();
+        DifficultyLevel difficultyLevel = this.getGame().getDifficultyLevel();
         Scanner in = new Scanner(System.in);
         while(player.getCurrentHp() > 0 && enemy.getCurrentHp() > 0){
             if(isPlayerTurn){
                 int option = 0;
                 do {
-                    System.out.println("É sua vez! Atacar ou fugir?");
-                    System.out.println("1 - Atacar");
-                    System.out.println("2 - Fugir");
-                    option = in.nextInt();
-                    switch(option){
-                        case 1: break;
-                        case 2: return CombatWinner.NONE;
-                        default: {
-                            System.out.println("Opção inválida.");
-                            option = 0;
-                        }
-                    } 
+                    try {
+                        System.out.println("É sua vez! Atacar ou fugir?");
+                        System.out.println("1 - Atacar");
+                        System.out.println("2 - Fugir");
+                        option = in.nextInt();
+                        switch(option){
+                            case 1: break;
+                            case 2: {
+                                System.out.println("Você não estava preparado para a força do inimigo, e decide fugir para que possa tentar novamente em uma próxima vez.");
+                                return CombatWinner.ENEMY;
+                            }
+                            default: {
+                                System.out.println("Opção inválida.");
+                                option = 0;
+                            }
+                        } 
+                    } catch (Exception e){
+                        System.out.println("Opção inválida.");
+                        option = 0;
+                    }                   
                 } while (option == 0);
-                int diceRoll = d20.roll();
-                if(diceRoll == 1){
-                    System.out.println("Você errou o ataque! Seu inimigo não sofreu dano.");
-                }
-                else if(diceRoll == 20){
-                    int damage = this.takeCriticalDamage(player, enemy);
-                    System.out.printf("Você acertou um ataque crítico! O inimigo sofreu %d de dano e agora possui %d pontos de vida.", damage, enemy.getCurrentHp());
-                }
-                else {
-                    int damage = this.takeDamage(player, enemy);
-                    System.out.printf("Você atacou! O inimigo sofreu %d de dano e agora possui %d pontos de vida.", damage, enemy.getCurrentHp());
-                }
+                this.attack(player, enemy, d20, difficultyLevel);
+                isPlayerTurn = !isPlayerTurn;
             } else {
-
+                this.attack(enemy, player, d20, difficultyLevel);
+                isPlayerTurn = !isPlayerTurn;
             }
         }
-        if(enemy.getCurrentHp() < 0){
+        if(enemy.getCurrentHp() <= 0){
+            System.out.println("O inimigo não é páreo para o seu heroísmo, e jaz imóvel aos seus pés.");
             return CombatWinner.PLAYER;
-        } else return CombatWinner.ENEMY;
+        } else {
+            System.out.print("Você não estava preparado para a força do inimigo. ");
+            Motivation motivation = player.getMotivation();
+            switch(motivation){
+                case VENGEANCE: {
+                    System.out.println("Não foi possível concluir sua vingança, e agora resta saber se alguém se vingará por você.");
+                    break;
+                }
+                case GLORY: {
+                    switch(player.getGender()){
+                        case MASCULINE: {
+                            System.out.println("A glória que buscavas não será sua, e a cidade aguarda por seu próximo herói.");
+                            break;
+                        }
+                        case FEMININE: {
+                            System.out.println("A glória que buscavas não será sua, e a cidade aguarda por sua próxima heróina.");
+                            break;
+                        }
+                        default: throw new InvalidGenderException("Gênero do personagem inválido.");
+                    }                    
+                }
+                default: throw new InvalidMotivationException("Motivação do personagem inválida.");
+            }
+            return CombatWinner.ENEMY;
+        }
     }
 
-    public int takeCriticalDamage(CombatCharacter attacker, CombatCharacter defender){
-        int damage = attacker.getTotalAtk();
-        defender.takeDamage(damage);
-        return damage;
+    private void attack(CombatCharacter attacker, CombatCharacter defender, Dice dice, DifficultyLevel difficultyLevel){
+        int diceRoll = dice.roll();
+        if(diceRoll == 1){
+            System.out.printf("%s atacou %s e errou o ataque! %s não sofreu dano.%n", attacker.getName(), attacker.getWeapon().attackString(), defender.getName());
+        }
+        else if(diceRoll == dice.getMaxValue()){
+            this.dealCriticalDamage(attacker, defender, diceRoll, difficultyLevel);
+            
+        }
+        else {
+            this.dealNormalDamage(attacker, defender, diceRoll, difficultyLevel);
+        }
     }
 
-    public int takeDamage(CombatCharacter attacker, CombatCharacter defender){
-        int damage = attacker.getTotalAtk() * DAMAGE_MODIFIER / (DAMAGE_MODIFIER + defender.getTotalDef());
+    private void dealCriticalDamage(CombatCharacter attacker, CombatCharacter defender, int diceRoll, DifficultyLevel difficultyLevel){
+        int damage = this.dealDamage(attacker, defender, 0, diceRoll, difficultyLevel); //0 defense: true damage
+        System.out.printf("%s atacou %s e acertou um ataque crítico! %s sofreu %d de dano e agora possui %d pontos de vida.%n", attacker.getName(), attacker.getWeapon().attackString(), defender.getName(), damage, defender.getCurrentHp());
+    }
+
+    private void dealNormalDamage(CombatCharacter attacker, CombatCharacter defender, int diceRoll, DifficultyLevel difficultyLevel){
+        int damage = this.dealDamage(attacker, defender, defender.getTotalDef(), diceRoll, difficultyLevel); // considers defender's defense
+        System.out.printf("%s atacou %s! %s sofreu %d de dano e agora possui %d pontos de vida.%n", attacker.getName(), attacker.getWeapon().attackString(), defender.getName(), damage, defender.getCurrentHp());
+    }
+
+    private int dealDamage(CombatCharacter attacker, CombatCharacter defender, int defense, int diceRoll, DifficultyLevel difficultyLevel){
+        int damage = (int)Math.floor((attacker.getTotalAtk() + diceRoll) * DAMAGE_MODIFIER / (DAMAGE_MODIFIER + defense));
+        if(attacker instanceof Enemy){
+            if(difficultyLevel == DifficultyLevel.EASY){
+                damage = (int)Math.round(damage * DifficultyLevel.EASY.getDamagePercentual());
+            }
+        } else {
+            if(difficultyLevel == DifficultyLevel.HARD){
+                damage = (int)Math.round(damage * DifficultyLevel.HARD.getDamagePercentual());
+            }
+        }
         defender.takeDamage(damage);
         return damage;
     }

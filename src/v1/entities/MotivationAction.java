@@ -18,7 +18,7 @@ public class MotivationAction extends GameAction {
         Scanner in = new Scanner(System.in);
         System.out.println(this.getDescription());
         for(int i = 0; i < this.getOptions().size(); i++){
-            System.out.printf("%d - %s", (i+1), this.getOptions().get(i));
+            System.out.printf("%d - %s%n", (i+1), this.getOptions().get(i));
         }
         int option = 0;
         do {

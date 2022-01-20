@@ -5,13 +5,13 @@ public enum DifficultyLevel {
     NORMAL(1), //no modifier;
     HARD(0.9); //90% damage to enemies;
 
-    private double damageModifier;
+    private double damagePercentual;
 
-    private DifficultyLevel(double damageModifier){
-        this.damageModifier = damageModifier;
+    private DifficultyLevel(double damagePercentual){
+        this.damagePercentual = damagePercentual;
     }
 
-    public double getDamageModifier(){
-        return this.damageModifier;
+    public double getDamagePercentual(){
+        return this.damagePercentual;
     }
 }
