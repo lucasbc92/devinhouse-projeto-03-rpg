@@ -27,18 +27,36 @@ public class Combat {
         return this.enemy;
     }
 
-    public CombatWinner fight(boolean isPlayerTurn) throws InvalidGenderException, InvalidMotivationException{
+    public CombatWinner fight(int playerInitialAgility) throws InvalidGenderException, InvalidMotivationException{
+        Scanner in = new Scanner(System.in);
         PlayableCharacter player = this.getGame().getCharacter();
         Enemy enemy = this.getEnemy();
         Dice d20 = new Dice20();
+        Coin coin = new Coin();
         DifficultyLevel difficultyLevel = this.getGame().getDifficultyLevel();
-        Scanner in = new Scanner(System.in);
+        int totalPlayerAgility = playerInitialAgility;
+        int totalEnemyAgility = enemy.getTotalAgility();
+        boolean isPlayerTurn = true;
         while(player.getCurrentHp() > 0 && enemy.getCurrentHp() > 0){
+            System.out.printf("Agilidade de %s: %d%n", player.getName(), totalPlayerAgility);
+            System.out.printf("Agilidade de %s: %d%n", enemy.getName(), totalEnemyAgility);
+            if(totalEnemyAgility > totalPlayerAgility){
+                isPlayerTurn = false;
+            } else if(totalPlayerAgility > totalEnemyAgility) {
+                isPlayerTurn = true;
+            } else { //if agility is equal, flip a coin to know who will attack
+                int headsOrTails = coin.roll();
+                if(headsOrTails == coin.getMaxValue()){
+                    isPlayerTurn = true;
+                } else {
+                    isPlayerTurn = false;
+                }
+            }
             if(isPlayerTurn){
                 int option = 0;
                 do {
                     try {
-                        System.out.println("É sua vez! Atacar ou fugir?");
+                        System.out.println("Atacar ou fugir?");
                         System.out.println("1 - Atacar");
                         System.out.println("2 - Fugir");
                         option = in.nextInt();
@@ -59,10 +77,10 @@ public class Combat {
                     }                   
                 } while (option == 0);
                 this.attack(player, enemy, d20, difficultyLevel);
-                isPlayerTurn = !isPlayerTurn;
+                totalEnemyAgility += enemy.getTotalAgility();
             } else {
                 this.attack(enemy, player, d20, difficultyLevel);
-                isPlayerTurn = !isPlayerTurn;
+                totalPlayerAgility += player.getTotalAgility();
             }
         }
         if(enemy.getCurrentHp() <= 0){

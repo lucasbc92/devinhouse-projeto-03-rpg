@@ -2,7 +2,7 @@ package v2.entities;
 
 import java.util.Random;
 
-public abstract class Dice {
+public class Dice {
     private Random random;
     private int maxValue;
 
@@ -16,6 +16,6 @@ public abstract class Dice {
     }
 
     public int roll(){
-        return random.nextInt(maxValue) + 1;
+        return random.nextInt(this.getMaxValue()) + 1;
     }
 }

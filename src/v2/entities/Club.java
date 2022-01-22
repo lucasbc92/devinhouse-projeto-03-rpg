@@ -1,10 +1,11 @@
 package v2.entities;
 
 public class Club extends Weapon {
-    private final static int DAMAGE = 7;
+    private final static int DAMAGE = 13;
+    private final static int AGILITY = 72;
 
     public Club(){
-        super(DAMAGE);
+        super(DAMAGE, AGILITY);
     }
 
     public String attackString(){

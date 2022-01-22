@@ -9,16 +9,18 @@ public abstract class CombatCharacter {
     private int currentHp;
     private int baseAtk;
     private int baseDef;
+    private int baseAgility;
     private CombatClass combatClass;
     private String name;
     private Weapon weapon;
     private Gender gender;
 
-    public CombatCharacter(int maxHp, int baseAtk, int baseDef, CombatClass combatClass, int chosenWeapon, String name, Gender gender) throws IndexOutOfBoundsException{
+    public CombatCharacter(int maxHp, int baseAtk, int baseDef, int baseAgility, CombatClass combatClass, int chosenWeapon, String name, Gender gender) throws IndexOutOfBoundsException{
         this.maxHp = maxHp;
         this.currentHp = maxHp;
         this.baseAtk = baseAtk;
         this.baseDef = baseDef;
+        this.baseAgility = baseAgility;
         this.combatClass = combatClass;
         this.weapon = combatClass.getWeapons()[chosenWeapon];
         this.name = name;
@@ -71,6 +73,14 @@ public abstract class CombatCharacter {
 
     public int getTotalDef(){
         return this.getBaseDef() + this.getCombatClass().getDef();
+    }
+
+    public int getBaseAgility(){
+        return this.baseAgility;
+    }
+
+    public int getTotalAgility(){
+        return this.getBaseAgility() + this.getWeapon().getAgility();
     }
 
     public CombatClass getCombatClass(){

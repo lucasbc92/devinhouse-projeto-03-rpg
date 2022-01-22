@@ -1,10 +1,11 @@
 package v2.entities;
 
 public class Book extends Weapon {
-    private final static int DAMAGE = 9;
+    private final static int DAMAGE = 12;
+    private final static int AGILITY = 80;
 
     public Book(){
-        super(DAMAGE);
+        super(DAMAGE, AGILITY);
     }
 
     public String attackString(){

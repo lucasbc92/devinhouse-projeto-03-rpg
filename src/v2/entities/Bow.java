@@ -1,10 +1,11 @@
 package v2.entities;
 
 public class Bow extends Weapon {
-    private final static int DAMAGE = 9;
+    private final static int DAMAGE = 3;
+    private final static int AGILITY = 115;
 
     public Bow(){
-        super(DAMAGE);
+        super(DAMAGE, AGILITY);
     }
 
     public String attackString(){

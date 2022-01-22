@@ -120,7 +120,7 @@ public class RolePlayingGame {
         System.out.println("Você se dirige para a porta à direita.");
         System.out.println("Você se aproxima, tentando ouvir o que acontece porta adentro, mas não escuta nada. Segura com mais força sua arma com uma mão, enquanto empurra a porta com a outra. Ao entrar, você se depara com uma sala espaçosa, com vários equipamentos de batalha pendurados nas paredes e dispostos em armários e mesas. Você imagina que este seja o arsenal do inimigo, onde estão guardados os equipamentos que seus soldados utilizam quando saem para espalhar o terror nas cidades e vilas da região.");
         System.out.println("Enquanto seu olhar percorre a sala, você ouve a porta se fechando e gira rapidamente para olhar para trás. Ali, de pé entre você e a porta fechada, bloqueando o caminho do seu destino, está um dos capitães do inimigo. Um orque horrendo, de armadura, capacete e espada em punho, em posição de combate. Ele avança em sua direção.");
-        boolean shouldContinue = enterInCombat(this, new OrcWarrior(), true);
+        boolean shouldContinue = enterInCombat(this, new OrcWarrior(), this.getCharacter().getTotalAgility());
         if(!shouldContinue) {
             return;
         }
@@ -155,7 +155,7 @@ public class RolePlayingGame {
         System.out.println("Em uma mesa, você encontra uma chave dourada, e sabe que aquela chave abre uma das fechaduras da porta do líder inimigo. Você pega a chave e guarda numa pequena bolsa que leva presa ao cinto.");
         System.out.println("Você retorna à sala anterior e se dirige à porta da esquerda. Você se aproxima, tentando ouvir o que acontece porta adentro, mas não escuta nada. Segura com mais força sua arma com uma mão, enquanto empurra a porta com a outra. Ao entrar, você se depara com uma sala parecida com a do arsenal, mas em vez de armaduras, existem vários potes e garrafas de vidro com conteúdos misteriosos e de cores diversas, e você entende que o capitão que vive ali, realiza experimentos com diversos ingredientes, criando poções utilizadas pelos soldados para aterrorizar a região.");
         System.out.println("No fundo da sala, olhando em sua direção, está outro dos capitães do inimigo. Um orque horrendo, de armadura, cajado em punho, em posição de combate. Ele avança em sua direção.");
-        shouldContinue = enterInCombat(this, new OrcShaman(), true);
+        shouldContinue = enterInCombat(this, new OrcShaman(), this.getCharacter().getTotalAgility());
         if(!shouldContinue) {
             return;
         }
@@ -198,11 +198,11 @@ public class RolePlayingGame {
                 option = in.nextInt();
                 switch(option) {
                     case 1: {
-                        shouldContinue = enterInCombat(this, new OrcLeader(), true);
+                        shouldContinue = enterInCombat(this, new OrcLeader(), this.getCharacter().getTotalAgility());
                         break;
                     }
                     case 2: {
-                        shouldContinue = enterInCombat(this, new OrcLeader(), false);
+                        shouldContinue = enterInCombat(this, new OrcLeader(), 0); // player waited, so initial agility is 0
                         break;
                     }
                     default: {
@@ -234,10 +234,10 @@ public class RolePlayingGame {
         return;
     }
     
-    private boolean enterInCombat(RolePlayingGame game, Enemy enemy, boolean playerInitiative) {
+    private boolean enterInCombat(RolePlayingGame game, Enemy enemy, int playerInitialAgility) {
         Combat combat = new Combat(game, enemy);
         try {
-            CombatWinner winner = combat.fight(playerInitiative);
+            CombatWinner winner = combat.fight(playerInitialAgility);
             if(winner == CombatWinner.ENEMY){
                 return false;
             }
